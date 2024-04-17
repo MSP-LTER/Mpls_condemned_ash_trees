@@ -1,0 +1,58 @@
+---
+title: ""
+output: html_document
+date: ""
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Minneapolis private ash tree condemnations 
+
+Points represent the center of a parcel where one or more ash trees were condemned by Minneapolis Parks and Rec for Emerald Ash Borer infestation from 2013 through 2023. Data was received from MPRB through data requests by the MSP LTER in 2023 and 2024, which included parcel IDs, Address, reason for removal (EAB) and inspection date. The data from MPRB was spatially joined with the [Metro Regional Parcel Dataset](https://gisdata.mn.gov/dataset/us-mn-state-metrogis-plan-regional-parcels) for spatial information and parcel attributes. Download the data from the map below [here](https://github.com/MSP-LTER/Mpls_condemned_ash_trees/blob/main/MPRBcondemn_ash_pars_pnts.csv). The data contains duplicate rows where more than one ash was condemned at a parcel, but points representing these trees appear stacked on top of each other since the resolution of the condemnation data is at the parcel level.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(leaflet)
+library(dplyr)
+
+ash_parsC<-read.csv("~/Documents/MPRBcondemn_ash_pars_pnts.csv")
+ash_pars13to16<-ash_parsC%>%filter(yr<=2016)
+ash_pars17to19<-ash_parsC%>%filter(yr>=2017&yr<=2019)
+ash_pars20to21<-ash_parsC%>%filter(yr>=2020&yr<=2021)
+ash_pars22to23<-ash_parsC%>%filter(yr>=2022&yr<=2023)
+
+```
+
+
+
+```{r pressure, echo=FALSE, warning=FALSE, message=FALSE}
+labels <-c("2013","2014","2015","2016", "2017", "2018", "2019", "2020", "2021","2022","2023")
+ypal <- 
+  colorFactor(palette = c("#56cfe1","#48bff3", "#4ea8de","#5390d9", "#5e60ce","#6930c3", "blueviolet", "violet", "violet", "hotpink", "hotpink"), 
+              levels = c("2013","2014","2015","2016", "2017", "2018", "2019", "2020", "2021","2022", "2023"))
+
+leaflet()%>% addProviderTiles(providers$CartoDB.Positron)%>%
+  addCircleMarkers(data=ash_pars13to16, color = ~ypal(ash_pars13to16$yrf), opacity = 1, 
+                   fillColor = ~ypal(ash_pars13to16$yrf), fillOpacity = .45, weight=1,radius=1.8, group = "2013-2016")%>%
+  addCircleMarkers(data=ash_pars17to19, color = ~ypal(ash_pars17to19$yrf), opacity = 1, 
+                   fillColor = ~ypal(ash_pars17to19$yrf), fillOpacity = .45, weight=1,radius=1.8, group = "2017-2019")%>%
+  addCircleMarkers(data=ash_pars20to21, color = ~ypal(ash_pars20to21$yrf), opacity = 1, 
+                   fillColor = ~ypal(ash_pars20to21$yrf), fillOpacity = .45, weight=1,radius=1.8, group = "2020-2021")%>%
+  addCircleMarkers(data=ash_pars22to23, color = ~ypal(ash_pars22to23$yrf), opacity = 1, 
+                   fillColor = ~ypal(ash_pars22to23$yrf), fillOpacity = .45, weight=1,radius=1.8, group = "2022-2023")%>%
+  addCircleMarkers(data=ash_parsC, color = ~ypal(ash_parsC$yrf), opacity = 1, 
+                   fillColor = ~ypal(ash_parsC$yrf), fillOpacity = .45, weight=1,radius=1.8, group="all 10 years")%>%
+  addLayersControl(
+    overlayGroups = c("2013-2016","2017-2019","2020-2021","2022-2023","all 10 years"),
+    options = layersControlOptions(collapsed = FALSE)
+  )%>%
+  addLegend(data = ash_parsC, pal = ypal, values = ~ash_parsC$yrf, 
+            title = "private ash condemnations",
+            opacity = 1,
+            labFormat = function(type, cuts, p) {  # Here's the trick
+              paste0(labels)
+            })
+
+```
+
