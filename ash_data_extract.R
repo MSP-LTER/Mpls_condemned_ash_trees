@@ -1,4 +1,4 @@
-library(tabulizer)
+library(tabulapdf)
 
 mprb_13thru21<-extract_tables("~/Downloads/DataRequest2023-069.pdf")
 #read in a list of data on 284 pages
